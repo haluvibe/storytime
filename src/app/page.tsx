@@ -1,95 +1,216 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import BarChartIcon from "@mui/icons-material/BarChart";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import DescriptionIcon from "@mui/icons-material/Description";
+import LayersIcon from "@mui/icons-material/Layers";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { Grid, Skeleton } from "@mui/material";
+import { createTheme } from "@mui/material/styles";
+import { AppProvider, Navigation, Router } from "@toolpad/core/AppProvider";
+import { DashboardLayout } from "@toolpad/core/DashboardLayout";
+import { PageContainer } from "@toolpad/core/PageContainer";
+import * as React from "react";
+import { useEffect } from "react";
+import { useLocalStorage } from "usehooks-ts";
+import { AddNewStory } from "./AddNewStory";
+import { StoryView } from "./StoryView";
+import { Story } from "./types";
+
+const NAVIGATION: Navigation = [
+  {
+    kind: "header",
+    title: "Main items",
+  },
+  {
+    segment: "home",
+    title: "Home",
+    icon: <DashboardIcon />,
+  },
+  {
+    segment: "orders",
+    title: "Orders",
+    icon: <ShoppingCartIcon />,
+  },
+  {
+    kind: "divider",
+  },
+  {
+    kind: "header",
+    title: "Analytics",
+  },
+  {
+    segment: "stories",
+    title: "My Stories",
+    icon: <BarChartIcon />,
+    children: [
+      {
+        segment: "add",
+        title: "Add a new story",
+        icon: <DescriptionIcon />,
+      },
+    ],
+  },
+  {
+    segment: "integrations",
+    title: "Integrations",
+    icon: <LayersIcon />,
+  },
+];
+
+const demoTheme = createTheme({
+  colorSchemes: { light: true, dark: true },
+  cssVariables: {
+    colorSchemeSelector: "class",
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 600,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
+});
+
+function useDemoRouter(initialPath: string): Router {
+  const [pathname, setPathname] = React.useState(initialPath);
+
+  const router = React.useMemo(() => {
+    return {
+      pathname,
+      searchParams: new URLSearchParams(),
+      navigate: (path: string | URL) => setPathname(String(path)),
+    };
+  }, [pathname]);
+
+  return router;
+}
+
+interface DashboardLayoutBasicProps {
+  window?: () => Window;
+}
+
+export default function DashboardLayoutBasic(props: DashboardLayoutBasicProps) {
+  const { window } = props;
+
+  const router = useDemoRouter("/");
+  const demoWindow = window ? window() : undefined;
+
+  const [stories] = useLocalStorage<Story[]>("my-stories", []);
+  const [navigation, setNavigation] = React.useState(NAVIGATION);
+
+  function renderSegmentContent(segment: string) {
+    // Handle story segments
+    if (segment.startsWith("story-")) {
+      const storyTitle = segment.replace("story-", "");
+      const story = stories.find((s) => s.title === storyTitle);
+      return story ? <StoryView story={story} /> : <div>Story not found</div>;
+    }
+
+    switch (segment) {
+      case "new":
+        return <div>New story content here</div>;
+      case "orders":
+        return <div>Orders content here</div>;
+      case "add":
+        return <AddNewStory />;
+      case "traffic":
+        return <div>Traffic book content here</div>;
+      case "stories":
+        return <div>Stories content here</div>;
+      case "integrations":
+        return <div>Integrations content here</div>;
+      default:
+        return <div>Welcome!</div>;
+    }
+  }
+
+  // Extract the current segment from the router's pathname
+  const segment = router.pathname.split("/").filter(Boolean).pop() || "new";
+
+  useEffect(() => {
+    setNavigation((prevNav) => {
+      const newNav = [...prevNav];
+      const storiesNavItem = newNav.find(
+        (
+          item
+        ): item is {
+          segment: string;
+          title: string;
+          icon: React.ReactNode;
+          children: Array<{
+            segment: string;
+            title: string;
+            icon: React.ReactNode;
+          }>;
+        } => "segment" in item && item.segment === "stories"
+      );
+
+      if (storiesNavItem) {
+        storiesNavItem.children = [
+          {
+            segment: "add",
+            title: "Add a new story",
+            icon: <DescriptionIcon />,
+          },
+          ...stories.map((story) => ({
+            segment: `story-${story.title}`,
+            title: story.title,
+            icon: <DescriptionIcon />,
+          })),
+        ];
+      }
+      return newNav;
+    });
+  }, [stories]);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <AppProvider
+      navigation={navigation}
+      router={router}
+      theme={demoTheme}
+      window={demoWindow}
+    >
+      <DashboardLayout>
+        <PageContainer>
+          {renderSegmentContent(segment)}
+          <Grid container spacing={1}>
+            <Grid size={5} />
+            <Grid size={12}>
+              <Skeleton height={14} />
+            </Grid>
+            <Grid size={12}>
+              <Skeleton height={14} />
+            </Grid>
+            <Grid size={4}>
+              <Skeleton height={100} />
+            </Grid>
+            <Grid size={8}>
+              <Skeleton height={100} />
+            </Grid>
+            <Grid size={12}>
+              <Skeleton height={150} />
+            </Grid>
+            <Grid size={12}>
+              <Skeleton height={14} />
+            </Grid>
+            <Grid size={3}>
+              <Skeleton height={100} />
+            </Grid>
+            <Grid size={3}>
+              <Skeleton height={100} />
+            </Grid>
+            <Grid size={3}>
+              <Skeleton height={100} />
+            </Grid>
+            <Grid size={3}>
+              <Skeleton height={100} />
+            </Grid>
+          </Grid>
+        </PageContainer>
+      </DashboardLayout>
+    </AppProvider>
   );
 }
