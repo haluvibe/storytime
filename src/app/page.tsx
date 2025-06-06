@@ -9,9 +9,11 @@ import { createTheme } from "@mui/material/styles";
 import { AppProvider, Navigation, Router } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { PageContainer } from "@toolpad/core/PageContainer";
+import { useSetAtom } from "jotai";
 import * as React from "react";
 import { useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { routerAtom } from "../atoms/routerAtom";
 import { AddNewStory } from "./AddNewStory";
 import { StoryView } from "./StoryView";
 import { Story } from "./types";
@@ -88,10 +90,15 @@ function useDemoRouter(initialPath: string): Router {
 }
 
 export default function DashboardLayoutBasic() {
+  const setRouter = useSetAtom(routerAtom);
   const router = useDemoRouter("/");
 
   const [stories] = useLocalStorage<Story[]>("my-stories", []);
   const [navigation, setNavigation] = React.useState(NAVIGATION);
+
+  React.useEffect(() => {
+    setRouter(router);
+  }, [router, setRouter]);
 
   function renderSegmentContent(segment: string) {
     // Handle story segments
