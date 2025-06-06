@@ -18,14 +18,13 @@ export function AddNewStory() {
           title: title.trim(),
           content: [
             {
+              type: "heading",
+              props: { level: 1 },
+              content: [{ type: "text", text: title.trim(), styles: {} }],
+            },
+            {
               type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: "",
-                  styles: {},
-                },
-              ],
+              content: [{ type: "text", text: "", styles: {} }],
             },
           ],
         },
@@ -54,9 +53,6 @@ export function AddNewStory() {
   if (mode === "manual") {
     return (
       <Box>
-        <Typography variant="h4" gutterBottom>
-          Write Your Own Story
-        </Typography>
         <Stack spacing={2} direction="column" sx={{ maxWidth: "100%" }}>
           <TextField
             label="Story Title"

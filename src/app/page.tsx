@@ -5,7 +5,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import DescriptionIcon from "@mui/icons-material/Description";
 import LayersIcon from "@mui/icons-material/Layers";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { Grid, Skeleton } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { AppProvider, Navigation, Router } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
@@ -88,15 +87,8 @@ function useDemoRouter(initialPath: string): Router {
   return router;
 }
 
-interface DashboardLayoutBasicProps {
-  window?: () => Window;
-}
-
-export default function DashboardLayoutBasic(props: DashboardLayoutBasicProps) {
-  const { window } = props;
-
+export default function DashboardLayoutBasic() {
   const router = useDemoRouter("/");
-  const demoWindow = window ? window() : undefined;
 
   const [stories] = useLocalStorage<Story[]>("my-stories", []);
   const [navigation, setNavigation] = React.useState(NAVIGATION);
@@ -167,49 +159,9 @@ export default function DashboardLayoutBasic(props: DashboardLayoutBasicProps) {
   }, [stories]);
 
   return (
-    <AppProvider
-      navigation={navigation}
-      router={router}
-      theme={demoTheme}
-      window={demoWindow}
-    >
+    <AppProvider navigation={navigation} router={router} theme={demoTheme}>
       <DashboardLayout>
-        <PageContainer>
-          {renderSegmentContent(segment)}
-          <Grid container spacing={1}>
-            <Grid size={5} />
-            <Grid size={12}>
-              <Skeleton height={14} />
-            </Grid>
-            <Grid size={12}>
-              <Skeleton height={14} />
-            </Grid>
-            <Grid size={4}>
-              <Skeleton height={100} />
-            </Grid>
-            <Grid size={8}>
-              <Skeleton height={100} />
-            </Grid>
-            <Grid size={12}>
-              <Skeleton height={150} />
-            </Grid>
-            <Grid size={12}>
-              <Skeleton height={14} />
-            </Grid>
-            <Grid size={3}>
-              <Skeleton height={100} />
-            </Grid>
-            <Grid size={3}>
-              <Skeleton height={100} />
-            </Grid>
-            <Grid size={3}>
-              <Skeleton height={100} />
-            </Grid>
-            <Grid size={3}>
-              <Skeleton height={100} />
-            </Grid>
-          </Grid>
-        </PageContainer>
+        <PageContainer>{renderSegmentContent(segment)}</PageContainer>
       </DashboardLayout>
     </AppProvider>
   );
